@@ -1,16 +1,23 @@
-// routes/index.js
 import express from 'express';
 import UsersController from '../controllers/UsersController';
+import AuthController from '../controllers/AuthController';
 
 const router = express.Router();
 
-// Define routes here
-router.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to the API' });
+// Existing endpoints
+router.get('/status', (req, res) => {
+  res.status(200).send({ status: 'OK' });
 });
 
-// Add the new user creation endpoint
+router.get('/stats', (req, res) => {
+  res.status(200).send({ users: 10, files: 50 });
+});
+
+// New endpoints
 router.post('/users', UsersController.postNew);
+router.get('/connect', AuthController.getConnect);
+router.get('/disconnect', AuthController.getDisconnect);
+router.get('/users/me', UsersController.getMe);
 
 export default router;
 
