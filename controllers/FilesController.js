@@ -1,65 +1,201 @@
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import { ObjectId } from 'mongodb';
 
 class FilesController {
-  // Existing methods
-
+  /**
+   * Retrieves a file based on its ID.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Object} The file object or an error response.
+   */
   static async getShow(req, res) {
-    const { id } = req.params;
-    const token = req.header('X-Token');
+    try {
+      const { id } = req.params;
+      const token = req.header('X-Token');
 
-    if (!token) {
-      return res.status(401).send({ error: 'Unauthorized' });
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const file = await dbClient.files.findOne({ _id: ObjectId(id), userId });
+      if (!file) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      return res.status(200).send(file);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Server error' });
     }
-
-    const userId = await redisClient.get(`auth_${token}`);
-    if (!userId) {
-      return res.status(401).send({ error: 'Unauthorized' });
-    }
-
-    const file = await dbClient.files.findOne({ _id: id, userId });
-    if (!file) {
-      return res.status(404).send({ error: 'Not found' });
-    }
-
-    return res.status(200).send(file);
   }
 
+  /**
+   * Retrieves a list of files with optional pagination.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Array} List of files or an error response.
+   */
   static async getIndex(req, res) {
-    const token = req.header('X-Token');
+    try {
+      const { parentId, page } = req.query;
+      const token = req.header('X-Token');
 
-    if (!token) {
-      return res.status(401).send({ error: 'Unauthorized' });
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const parent = parentId ? { parentId } : { parentId: '0' };
+      const limit = 20;
+      const skip = page ? page * limit : 0;
+
+      const files = await dbClient.files
+        .find({ userId, ...parent })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+
+      return res.status(200).send(files);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Server error' });
     }
-
-    const userId = await redisClient.get(`auth_${token}`);
-    if (!userId) {
-      return res.status(401).send({ error: 'Unauthorized' });
-    }
-
-    const { parentId = '0', page = 0 } = req.query;
-    const pageSize = 20;
-    const skip = page * pageSize;
-
-    const files = await dbClient.files
-      .aggregate([
-        {
-          $match: {
-            $and: [{ parentId }, { userId }],
-          },
-        },
-        { $skip: skip },
-        { $limit: pageSize },
-      ])
-      .toArray();
-
-    return res.status(200).send(files);
   }
 
   // New endpoints
 
-  static async postUpload(req, res) {
-    // Implementation for POST /files
+  /**
+   * Sets the isPublic property to true on the file document based on the ID.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Object} The updated file object or an error response.
+   */
+  static async putPublish(req, res) {
+    try {
+      const { id } = req.params;
+      const token = req.header('X-Token');
+
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const file = await dbClient.files.findOne({ _id: ObjectId(id), userId });
+      if (!file) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      await dbClient.files.updateOne({ _id: ObjectId(id) }, { $set: { isPublic: true } });
+      const updatedFile = await dbClient.files.findOne({ _id: ObjectId(id), userId });
+
+      return res.status(200).send(updatedFile);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Server error' });
+    }
+  }
+
+  /**
+   * Sets the isPublic property to false on the file document based on the ID.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Object} The updated file object or an error response.
+   */
+  static async putUnpublish(req, res) {
+    try {
+      const { id } = req.params;
+      const token = req.header('X-Token');
+
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const file = await dbClient.files.findOne({ _id: ObjectId(id), userId });
+      if (!file) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      await dbClient.files.updateOne({ _id: ObjectId(id) }, { $set: { isPublic: false } });
+      const updatedFile = await dbClient.files.findOne({ _id: ObjectId(id), userId });
+
+      return res.status(200).send(updatedFile);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Server error' });
+    }
+  }
+}
+
+/**
+   * Retrieves the content of a file based on its ID.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Object} The file content or an error response.
+   */
+  static async getFile(req, res) {
+    try {
+      const { id } = req.params;
+      const token = req.header('X-Token');
+
+      if (!token) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const file = await dbClient.files.findOne({ _id: ObjectId(id) });
+
+      if (!file) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      if (!file.isPublic && file.userId !== userId) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      if (file.type === 'folder') {
+        return res.status(400).send({ error: "A folder doesn't have content" });
+      }
+
+      const filePath = file.localPath;
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      const mimeType = mime.lookup(filePath);
+      if (!mimeType) {
+        return res.status(500).send({ error: 'Server error' });
+      }
+
+      const fileContent = fs.readFileSync(filePath);
+      res.setHeader('Content-Type', mimeType);
+      return res.status(200).send(fileContent);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Server error' });
+    }
   }
 }
 
