@@ -1,3 +1,4 @@
+// routes/index.js
 import express from 'express';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
@@ -23,4 +24,3 @@ router.get('/files/:id', FilesController.getShow);
 router.get('/files', FilesController.getIndex);
 
 export default router;
-
