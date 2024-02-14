@@ -84,6 +84,6 @@ The endpoint `GET /files/:id/data` allows retrieval of file content. It supports
 
 Image thumbnails are generated in the background using a Bull queue called `fileQueue`. The worker process, defined in `worker.js`, handles this task. Thumbnails are generated for different sizes (500x, 250x, and 100x) and stored alongside the original image.
 
-To get started with this project, please follow the instructions provided in the corresponding GitHub repository: [alx-files_manager](https://github.com/chibwesamuel).
+To get started with this project, you can follow the instructions provided in the corresponding GitHub repository: [alx-files_manager](https://github.com/chibwesamuel).
 
 Feel free to explore the code and adapt it to your specific needs. Enjoy working on this versatile file management project!
