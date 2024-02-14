@@ -1,8 +1,9 @@
-// controllers/UserController.js
+// UserController.js
 
 import dbClient from '../utils/db';
 import sha1 from 'sha1';
 import redisClient from '../utils/redis';
+import userQueue from '../queues/userQueue';
 
 class UserController {
   static async postNew(req, res) {
@@ -27,6 +28,9 @@ class UserController {
 
     // Insert the new user into the database
     const result = await dbClient.db.collection('users').insertOne({ email, password: hashedPassword });
+
+    // Add a job to the userQueue with the userId
+    await userQueue.add({ userId: result.insertedId });
 
     // Return the new user's ID and email
     const newUser = { id: result.insertedId, email };

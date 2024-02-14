@@ -35,4 +35,3 @@ fileQueue.process(async (job) => {
     await thumbnail.generate(imagePath, thumbnailPath, size, size);
   }
 });
-
