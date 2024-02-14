@@ -1,4 +1,3 @@
-//index.js
 import express from 'express';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
@@ -20,9 +19,10 @@ router.post('/users', UsersController.postNew);
 router.get('/connect', AuthController.getConnect);
 router.get('/disconnect', AuthController.getDisconnect);
 router.get('/users/me', UsersController.getMe);
+router.post('/files', FilesController.postUpload); // New endpoint
 router.get('/files/:id', FilesController.getShow);
 router.get('/files', FilesController.getIndex);
-router.get('/status', AppController.getStatus);
-router.get('/stats', AppController.getStats);
+router.get('/status', AppController.getStatus); // Assuming AppController exists
+router.get('/stats', AppController.getStats); // Assuming AppController exists
 
 export default router;
