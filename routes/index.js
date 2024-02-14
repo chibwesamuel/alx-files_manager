@@ -1,4 +1,4 @@
-// routes/index.js
+//index.js
 import express from 'express';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
