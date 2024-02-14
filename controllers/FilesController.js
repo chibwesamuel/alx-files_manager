@@ -72,8 +72,6 @@ class FilesController {
     }
   }
 
-  // New endpoints
-
   /**
    * Sets the isPublic property to true on the file document based on the ID.
    * @param {Object} req - Express request object.
@@ -145,59 +143,4 @@ class FilesController {
   }
 }
 
-/**
-   * Retrieves the content of a file based on its ID.
-   * @param {Object} req - Express request object.
-   * @param {Object} res - Express response object.
-   * @returns {Object} The file content or an error response.
-   */
-  static async getFile(req, res) {
-    try {
-      const { id } = req.params;
-      const token = req.header('X-Token');
-
-      if (!token) {
-        return res.status(401).send({ error: 'Unauthorized' });
-      }
-
-      const userId = await redisClient.get(`auth_${token}`);
-      if (!userId) {
-        return res.status(401).send({ error: 'Unauthorized' });
-      }
-
-      const file = await dbClient.files.findOne({ _id: ObjectId(id) });
-
-      if (!file) {
-        return res.status(404).send({ error: 'Not found' });
-      }
-
-      if (!file.isPublic && file.userId !== userId) {
-        return res.status(404).send({ error: 'Not found' });
-      }
-
-      if (file.type === 'folder') {
-        return res.status(400).send({ error: "A folder doesn't have content" });
-      }
-
-      const filePath = file.localPath;
-      if (!fs.existsSync(filePath)) {
-        return res.status(404).send({ error: 'Not found' });
-      }
-
-      const mimeType = mime.lookup(filePath);
-      if (!mimeType) {
-        return res.status(500).send({ error: 'Server error' });
-      }
-
-      const fileContent = fs.readFileSync(filePath);
-      res.setHeader('Content-Type', mimeType);
-      return res.status(200).send(fileContent);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send({ error: 'Server error' });
-    }
-  }
-}
-
 export default FilesController;
-

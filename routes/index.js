@@ -22,6 +22,8 @@ router.get('/users/me', UsersController.getMe);
 router.post('/files', FilesController.postUpload); // New endpoint
 router.get('/files/:id', FilesController.getShow);
 router.get('/files', FilesController.getIndex);
+router.put('/files/:id/publish', FilesController.putPublish); // New endpoint
+router.put('/files/:id/unpublish', FilesController.putUnpublish); // New endpoint
 router.get('/status', AppController.getStatus); // Assuming AppController exists
 router.get('/stats', AppController.getStats); // Assuming AppController exists
 
