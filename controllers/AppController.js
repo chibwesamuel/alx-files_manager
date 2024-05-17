@@ -1,27 +1,26 @@
-//AppController.js
+// controllers/AppController.js
+const { getRedisClient } = require('../utils/redis');
+const { getDbClient } = require('../utils/db');
 
 class AppController {
-  static getHome(req, res) {
-    res.status(200).json({ message: 'Welcome to the API' });
+  static async getStatus(req, res) {
+    const redisClient = getRedisClient();
+    const dbClient = getDbClient();
+
+    const redisAlive = await redisClient.isAlive();
+    const dbAlive = await dbClient.isAlive();
+
+    res.status(200).json({ redis: redisAlive, db: dbAlive });
   }
 
-  static addNewItem(req, res) {
-    // Assuming a JSON request with data like { "name": "Item Name", "description": "Item Description" }
-    const { name, description } = req.body;
+  static async getStats(req, res) {
+    const dbClient = getDbClient();
 
-    // Process the data and add it to your application logic/database
-    // Example: Saving to a database
-    // SomeDatabaseModel.create({ name, description })
-    //   .then((item) => {
-    //     res.status(201).json(item);
-    //   })
-    //   .catch((error) => {
-    //     res.status(500).json({ error: 'Failed to add item' });
-    //   });
+    const usersCount = await dbClient.nbUsers();
+    const filesCount = await dbClient.nbFiles();
 
-    // For simplicity, we'll just echo back the received data
-    res.status(201).json({ name, description });
+    res.status(200).json({ users: usersCount, files: filesCount });
   }
 }
 
-export default AppController;
+module.exports = AppController;

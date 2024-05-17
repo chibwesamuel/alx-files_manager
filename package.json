@@ -1,9 +1,9 @@
 {
   "name": "files_manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "In this project, I have built a back-end application for managing files. This project encompasses various aspects of web development, including authentication, Node.js, MongoDB, Redis, pagination, and background processing. The primary objective is to create a simple platform for uploading and viewing files with the following features:",
   "main": "index.js",
-  "scripts": {
+  "module": "string"{
     "lint": "./node_modules/.bin/eslint",
     "check-lint": "lint [0-9]*.js",
     "start-server": "nodemon --exec babel-node --presets @babel/preset-env ./server.js",
@@ -17,10 +17,10 @@
     "body-parser": "^1.20.2",
     "bull": "^3.16.0",
     "chai-http": "^4.3.0",
-    "express": "^4.17.1",
+    "express": "^4.19.2",
     "image-thumbnail": "^1.0.10",
     "mime-types": "^2.1.27",
-    "mongodb": "^3.5.9",
+    "mongodb": "^3.7.4",
     "redis": "^2.8.0",
     "sha1": "^1.1.1",
     "uuid": "^8.2.0"
@@ -41,5 +41,12 @@
     "nodemon": "^2.0.2",
     "request": "^2.88.0",
     "sinon": "^7.5.0"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": []
 }
